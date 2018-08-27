@@ -1,0 +1,68 @@
+<div class="jumbotron jumbotron-fluid bg-dark">
+  <div class="container">
+    <h1 class="display-4 text-center text-danger">MongoDB Scraper</h1>
+    <p class="lead text-center text-white">Fake News Edition</p>
+  </div>
+</div>
+
+<div>
+  <div id="article"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+<script>
+  $(document).ready(function(){
+
+    $("#clearBtn").on('click', function(e){
+      e.preventDefault();
+      $('#article').empty();
+    })
+
+
+    $("#scrape").on("click", async function(e){
+      $('#article').empty()
+      e.preventDefault();
+      const articles = await axios.post('/api/scrape', null);
+      for (var i = 0; i < 10; i++) {
+        let b = i + 10;
+        const headline = articles.data.scrape[i].headline
+        const link = articles.data.scrape[i].link
+        const summary = articles.data.scrape[b].summary;
+        var article = 
+        `<div class="card bg-dark border border-white">
+          <div class="card-header border border-white">
+            <h1><strong><a href="${link}" target="_blank" class="text-danger">
+              ${headline}
+            </a></strong></h1>
+          </div>
+          <div class="card-body border border-white">
+            <a class="card-text text-white" href="${link}" target="_blank">${summary}</a>
+            <button class="btn btn-danger text-white saveBtn" headline="${headline}" link="${link}" summary="${summary}">
+              SAVE ARTICLE!
+            </button>
+          </div>
+        </div>`
+        $('#article').append(article);
+      }
+      $(".saveBtn").on("click", async function(e){
+        e.preventDefault();
+        const header = $(this).attr('headline');
+        const anchor = $(this).attr('link');
+        const copy = $(this).attr('summary')
+        const savedArticle = {
+          headline: header,
+          link: anchor,
+          summary: copy
+        }
+        try {
+          const newArticle = await axios.post('/api/articles', savedArticle);
+        }
+        catch (err) {
+          console.log(`Error: ${err.message}`)
+        }
+      });
+    });
+
+  });
+</script>
